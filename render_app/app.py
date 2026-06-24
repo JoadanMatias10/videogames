@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 from flask import Flask, render_template, request
 
-from model_utils import FeatureSelector  # noqa: F401 required for joblib loading
-
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR / "model_pipeline.joblib"
@@ -19,104 +17,162 @@ model_pipeline = joblib.load(MODEL_PATH)
 with open(METADATA_PATH, "r", encoding="utf-8") as file:
     metadata = json.load(file)
 
-REGIONAL_FIELDS = {
-    "North America": "Norteamerica",
-    "Europe": "Europa",
-    "Japan": "Japon",
-    "Rest of World": "Resto del mundo",
+TARGET_UNIT = metadata.get("target_unit", "millones de copias vendidas")
+
+NUMERIC_FIELDS = {
+    "Year_of_Release": {
+        "label": "Ano de lanzamiento",
+        "help": "Ejemplo: 2016. Si se deja vacio, el pipeline imputara el valor.",
+        "min": 1970,
+        "max": 2030,
+        "step": 1,
+    },
+    "NA_Sales": {
+        "label": "Ventas en Norteamerica",
+        "help": "Millones de copias vendidas en Norteamerica.",
+        "min": 0,
+        "max": 50,
+        "step": 0.01,
+    },
+    "EU_Sales": {
+        "label": "Ventas en Europa",
+        "help": "Millones de copias vendidas en Europa.",
+        "min": 0,
+        "max": 50,
+        "step": 0.01,
+    },
+    "Critic_Score": {
+        "label": "Puntaje de critica",
+        "help": "Valor de 0 a 100.",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+    },
+    "Critic_Count": {
+        "label": "Cantidad de criticas",
+        "help": "Numero de resenas de critica.",
+        "min": 0,
+        "max": 200,
+        "step": 1,
+    },
+    "User_Score": {
+        "label": "Puntaje de usuarios",
+        "help": "Valor de 0 a 10.",
+        "min": 0,
+        "max": 10,
+        "step": 0.1,
+    },
+    "User_Count": {
+        "label": "Cantidad de usuarios",
+        "help": "Numero de resenas de usuarios.",
+        "min": 0,
+        "max": 12000,
+        "step": 1,
+    },
+}
+
+CATEGORICAL_FIELDS = {
+    "Platform": {
+        "label": "Plataforma",
+        "help": "Consola o plataforma del videojuego.",
+        "required": True,
+        "input_type": "select",
+    },
+    "Genre": {
+        "label": "Genero",
+        "help": "Genero principal del videojuego.",
+        "required": True,
+        "input_type": "select",
+    },
+    "Publisher": {
+        "label": "Publicador",
+        "help": "Empresa publicadora. Se puede escribir una nueva.",
+        "required": False,
+        "input_type": "text",
+    },
+    "Developer": {
+        "label": "Desarrollador",
+        "help": "Empresa desarrolladora. Se puede dejar vacio.",
+        "required": False,
+        "input_type": "text",
+    },
+    "Rating": {
+        "label": "Clasificacion",
+        "help": "Clasificacion de contenido.",
+        "required": False,
+        "input_type": "select",
+    },
 }
 
 
-def parse_sales_value(form, field, label):
+def empty_form_data():
+    data = {}
+    for field in metadata["features"]:
+        if field in CATEGORICAL_FIELDS:
+            categories = metadata["categories"].get(field, [])
+            data[field] = categories[0] if categories else ""
+        else:
+            data[field] = ""
+    return data
+
+
+def parse_numeric(form, field, config):
     raw_value = form.get(field, "").strip()
     if not raw_value:
-        return None, f"Ingresa las ventas de {label}."
+        return np.nan, None
 
     try:
         value = float(raw_value)
     except ValueError:
-        return None, f"Las ventas de {label} deben ser numericas."
+        return np.nan, f"{config['label']} debe ser numerico."
 
-    if value < 0 or value > 50:
-        return None, f"Las ventas de {label} deben estar entre 0 y 50 millones."
+    if value < config["min"] or value > config["max"]:
+        return np.nan, (
+            f"{config['label']} debe estar entre "
+            f"{config['min']} y {config['max']}."
+        )
 
+    return value, None
+
+
+def parse_categorical(form, field, config):
+    value = form.get(field, "").strip()
+    if not value:
+        if config["required"]:
+            return "", f"Selecciona {config['label'].lower()}."
+        return np.nan, None
     return value, None
 
 
 def validate_form(form):
     errors = []
+    row = {}
 
-    year_raw = form.get("Year", "").strip()
-    genre = form.get("Genre", "").strip()
-    publisher = form.get("Publisher", "").strip()
-
-    if year_raw:
-        try:
-            year = float(year_raw)
-        except ValueError:
-            errors.append("El año debe ser numerico.")
-            year = np.nan
+    for field in metadata["features"]:
+        if field in NUMERIC_FIELDS:
+            value, error = parse_numeric(form, field, NUMERIC_FIELDS[field])
         else:
-            if year < 2013 or year > 2030:
-                errors.append("El año debe estar entre 2013 y 2030.")
-    else:
-        year = np.nan
+            value, error = parse_categorical(form, field, CATEGORICAL_FIELDS[field])
 
-    if not genre:
-        errors.append("Selecciona un genero.")
-    elif genre not in metadata["genres"]:
-        errors.append("El genero seleccionado no es valido.")
-
-    if not publisher:
-        errors.append("Selecciona un publicador.")
-    elif publisher not in metadata["publishers"]:
-        errors.append("El publicador seleccionado no es valido.")
-
-    regional_values = {}
-    for field, label in REGIONAL_FIELDS.items():
-        value, error = parse_sales_value(form, field, label)
         if error:
             errors.append(error)
-        else:
-            regional_values[field] = value
+        row[field] = value
 
-    data = {
-        "Year": year,
-        "Genre": genre,
-        "Publisher": publisher,
-        **regional_values,
-    }
-    return data, errors
+    return row, errors
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     prediction = None
     errors = []
-    form_data = {
-        "Year": "",
-        "Genre": metadata["genres"][0] if metadata["genres"] else "",
-        "Publisher": metadata["publishers"][0] if metadata["publishers"] else "",
-        "North America": "",
-        "Europe": "",
-        "Japan": "",
-        "Rest of World": "",
-    }
+    form_data = empty_form_data()
 
     if request.method == "POST":
-        form_data = {
-            "Year": request.form.get("Year", "").strip(),
-            "Genre": request.form.get("Genre", "").strip(),
-            "Publisher": request.form.get("Publisher", "").strip(),
-            "North America": request.form.get("North America", "").strip(),
-            "Europe": request.form.get("Europe", "").strip(),
-            "Japan": request.form.get("Japan", "").strip(),
-            "Rest of World": request.form.get("Rest of World", "").strip(),
-        }
+        form_data = {field: request.form.get(field, "").strip() for field in metadata["features"]}
         row, errors = validate_form(request.form)
 
         if not errors:
-            input_data = pd.DataFrame([row])
+            input_data = pd.DataFrame([row], columns=metadata["features"])
             predicted_value = float(model_pipeline.predict(input_data)[0])
             prediction = max(predicted_value, 0.0)
 
@@ -126,7 +182,9 @@ def index():
         errors=errors,
         form_data=form_data,
         metadata=metadata,
-        regional_fields=REGIONAL_FIELDS,
+        target_unit=TARGET_UNIT,
+        numeric_fields=NUMERIC_FIELDS,
+        categorical_fields=CATEGORICAL_FIELDS,
     )
 
 

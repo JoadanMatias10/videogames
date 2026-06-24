@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prediccion de ventas globales PS4</title>
+  <title>Prediccion de ventas globales de videojuegos</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -11,10 +11,10 @@
     <section class="panel">
       <div class="header">
         <p class="eyebrow">Modelo de regresion</p>
-        <h1>Prediccion de ventas globales de videojuegos PS4</h1>
+        <h1>Prediccion de ventas globales de videojuegos</h1>
         <p class="summary">
-          Ingresa ventas regionales observadas y datos generales del videojuego. La aplicacion
-          estima las ventas globales en millones de copias.
+          Ingresa datos originales del videojuego. La aplicacion estima
+          <strong>Global_Sales</strong> en millones de copias.
         </p>
       </div>
 
@@ -27,46 +27,53 @@
       {% endif %}
 
       <form method="post" class="prediction-form">
-        <label>
-          <span>Año de lanzamiento</span>
-          <small>Ejemplo: 2018. Si se deja vacio, el pipeline imputara el valor.</small>
-          <input type="number" name="Year" min="2013" max="2030" step="1" value="{{ form_data.Year }}">
-        </label>
+        <div class="field-grid">
+          {% for field in metadata.features %}
+            {% if field in categorical_fields %}
+              {% set config = categorical_fields[field] %}
+              <label>
+                <span>{{ config.label }}</span>
+                <small>{{ config.help }}</small>
 
-        <label>
-          <span>Genero</span>
-          <small>Categoria original del videojuego.</small>
-          <select name="Genre" required>
-            {% for genre in metadata.genres %}
-              <option value="{{ genre }}" {% if genre == form_data.Genre %}selected{% endif %}>{{ genre }}</option>
-            {% endfor %}
-          </select>
-        </label>
-
-        <label>
-          <span>Publicador</span>
-          <small>Empresa publicadora del juego.</small>
-          <select name="Publisher" required>
-            {% for publisher in metadata.publishers %}
-              <option value="{{ publisher }}" {% if publisher == form_data.Publisher %}selected{% endif %}>{{ publisher }}</option>
-            {% endfor %}
-          </select>
-        </label>
-
-        <div class="regional-grid">
-          {% for field, label in regional_fields.items() %}
-          <label>
-            <span>{{ label }}</span>
-            <small>Ventas regionales en millones de copias.</small>
-            <input
-              type="number"
-              name="{{ field }}"
-              min="0"
-              max="50"
-              step="0.01"
-              required
-              value="{{ form_data.get(field, '') }}">
-          </label>
+                {% if config.input_type == 'select' %}
+                  <select name="{{ field }}" {% if config.required %}required{% endif %}>
+                    {% if not config.required %}
+                      <option value="" {% if not form_data.get(field) %}selected{% endif %}>Sin dato</option>
+                    {% endif %}
+                    {% for option in metadata.categories.get(field, []) %}
+                      <option value="{{ option }}" {% if option == form_data.get(field) %}selected{% endif %}>
+                        {{ option }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                {% else %}
+                  <input
+                    type="text"
+                    name="{{ field }}"
+                    list="{{ field }}_options"
+                    value="{{ form_data.get(field, '') }}"
+                    {% if config.required %}required{% endif %}>
+                  <datalist id="{{ field }}_options">
+                    {% for option in metadata.categories.get(field, [])[:250] %}
+                      <option value="{{ option }}"></option>
+                    {% endfor %}
+                  </datalist>
+                {% endif %}
+              </label>
+            {% else %}
+              {% set config = numeric_fields[field] %}
+              <label>
+                <span>{{ config.label }}</span>
+                <small>{{ config.help }}</small>
+                <input
+                  type="number"
+                  name="{{ field }}"
+                  min="{{ config.min }}"
+                  max="{{ config.max }}"
+                  step="{{ config.step }}"
+                  value="{{ form_data.get(field, '') }}">
+              </label>
+            {% endif %}
           {% endfor %}
         </div>
 
@@ -77,7 +84,7 @@
       <section class="result">
         <p>Prediccion estimada</p>
         <strong>{{ "%.2f"|format(prediction) }}</strong>
-        <span>millones de copias vendidas a nivel global</span>
+        <span>{{ target_unit }} a nivel global</span>
       </section>
       {% endif %}
     </section>
@@ -87,15 +94,19 @@
       <dl>
         <div>
           <dt>Escenario</dt>
-          <dd>{{ metadata.best_scenario }}</dd>
+          <dd>{{ metadata.scenario }}</dd>
         </div>
         <div>
           <dt>Algoritmo</dt>
-          <dd>{{ metadata.best_model }}</dd>
+          <dd>{{ metadata.model }}</dd>
+        </div>
+        <div>
+          <dt>Representacion</dt>
+          <dd>{% if metadata.uses_pca %}PCA{% else %}Caracteristicas seleccionadas{% endif %}</dd>
         </div>
         <div>
           <dt>Variable objetivo</dt>
-          <dd>{{ metadata.target }} en {{ metadata.target_unit }}</dd>
+          <dd>{{ metadata.target }} en {{ target_unit }}</dd>
         </div>
       </dl>
     </aside>
