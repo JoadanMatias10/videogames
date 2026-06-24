@@ -37,7 +37,7 @@ def load_dataset():
 
 
 def build_preprocessor():
-    numeric_features = ["Year"]
+    numeric_features = ["Year", "North America", "Europe", "Japan", "Rest of World"]
     categorical_features = ["Genre", "Publisher"]
 
     numeric_transformer = Pipeline(
@@ -189,7 +189,7 @@ def main():
     dataset = load_dataset()
 
     target = "Global_Sales"
-    removed_columns = ["Game", "North America", "Europe", "Japan", "Rest of World"]
+    removed_columns = ["Game"]
     feature_cols = [col for col in dataset.columns if col not in removed_columns + [target]]
 
     X = dataset[feature_cols].copy()
@@ -273,6 +273,12 @@ def main():
         "target_unit": "millones de copias vendidas",
         "input_features": feature_cols,
         "removed_columns": removed_columns,
+        "regional_sales_features": [
+            "North America",
+            "Europe",
+            "Japan",
+            "Rest of World",
+        ],
         "best_scenario": str(best["Escenario"]),
         "best_model": str(best["Modelo"]),
         "selected_features": selected_features,
@@ -282,6 +288,8 @@ def main():
         "publishers": publishers,
         "year_min": None if pd.isna(dataset["Year"].min()) else int(dataset["Year"].min()),
         "year_max": None if pd.isna(dataset["Year"].max()) else int(dataset["Year"].max()),
+        "sales_min": float(dataset[["North America", "Europe", "Japan", "Rest of World"]].min().min()),
+        "sales_max": float(dataset[["North America", "Europe", "Japan", "Rest of World"]].max().max()),
     }
 
     with open(METADATA_PATH, "w", encoding="utf-8") as file:

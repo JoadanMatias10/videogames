@@ -13,8 +13,8 @@
         <p class="eyebrow">Modelo de regresion</p>
         <h1>Prediccion de ventas globales de videojuegos PS4</h1>
         <p class="summary">
-          Ingresa datos originales del videojuego. La aplicacion aplica internamente imputacion,
-          codificacion, escalado y la representacion seleccionada del modelo.
+          Ingresa ventas regionales observadas y datos generales del videojuego. La aplicacion
+          estima las ventas globales en millones de copias.
         </p>
       </div>
 
@@ -52,6 +52,23 @@
             {% endfor %}
           </select>
         </label>
+
+        <div class="regional-grid">
+          {% for field, label in regional_fields.items() %}
+          <label>
+            <span>{{ label }}</span>
+            <small>Ventas regionales en millones de copias.</small>
+            <input
+              type="number"
+              name="{{ field }}"
+              min="0"
+              max="50"
+              step="0.01"
+              required
+              value="{{ form_data.get(field, '') }}">
+          </label>
+          {% endfor %}
+        </div>
 
         <button type="submit">Realizar prediccion</button>
       </form>

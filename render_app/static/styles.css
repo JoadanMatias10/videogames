@@ -83,6 +83,12 @@ h2 {
   margin-top: 26px;
 }
 
+.regional-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
 label {
   display: grid;
   gap: 7px;
@@ -191,5 +197,11 @@ dd {
 
   h1 {
     font-size: 1.55rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .regional-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -5,68 +5,74 @@
   "input_features": [
     "Year",
     "Genre",
-    "Publisher"
-  ],
-  "removed_columns": [
-    "Game",
+    "Publisher",
     "North America",
     "Europe",
     "Japan",
     "Rest of World"
   ],
-  "best_scenario": "PCA",
+  "removed_columns": [
+    "Game"
+  ],
+  "regional_sales_features": [
+    "North America",
+    "Europe",
+    "Japan",
+    "Rest of World"
+  ],
+  "best_scenario": "Caracteristicas seleccionadas",
   "best_model": "Regresion Lineal",
   "selected_features": [
-    "Publisher_Activision",
-    "Publisher_Electronic Arts",
-    "Publisher_Rockstar Games",
-    "Publisher_EA Sports",
-    "Publisher_2K Sports",
-    "Year"
+    "Rest of World",
+    "Europe",
+    "North America",
+    "Japan",
+    "Year",
+    "Genre_Sports"
   ],
-  "pca_components": 59,
+  "pca_components": 33,
   "cv_summary": [
     {
+      "Escenario": "Caracteristicas seleccionadas",
+      "Modelo": "Regresion Lineal",
+      "R2 medio": 0.9999902452648952,
+      "MAE medio": 0.0026703402634624257,
+      "Desv est R2": 3.361511656798924e-06
+    },
+    {
       "Escenario": "PCA",
       "Modelo": "Regresion Lineal",
-      "R2 medio": 0.09930457759293417,
-      "MAE medio": 0.6892666644847466,
-      "Desv est R2": 0.16199930370469165
-    },
-    {
-      "Escenario": "PCA",
-      "Modelo": "Random Forest",
-      "R2 medio": 0.06973944240479292,
-      "MAE medio": 0.595366380641664,
-      "Desv est R2": 0.19598076559239908
-    },
-    {
-      "Escenario": "PCA",
-      "Modelo": "Red Neuronal MLP",
-      "R2 medio": 0.057167543806922225,
-      "MAE medio": 0.6495516833239882,
-      "Desv est R2": 0.08801182284669043
+      "R2 medio": 0.9999765619153631,
+      "MAE medio": 0.004498026835144729,
+      "Desv est R2": 9.579450587143571e-06
     },
     {
       "Escenario": "Caracteristicas seleccionadas",
       "Modelo": "Red Neuronal MLP",
-      "R2 medio": -0.0144695091505443,
-      "MAE medio": 0.7256213867673512,
-      "Desv est R2": 0.16398819841274773
+      "R2 medio": 0.9972625317074398,
+      "MAE medio": 0.03705910008479773,
+      "Desv est R2": 0.0018276649217755668
+    },
+    {
+      "Escenario": "PCA",
+      "Modelo": "Red Neuronal MLP",
+      "R2 medio": 0.9942345338704615,
+      "MAE medio": 0.06324514665623568,
+      "Desv est R2": 0.003565854302272859
     },
     {
       "Escenario": "Caracteristicas seleccionadas",
       "Modelo": "Random Forest",
-      "R2 medio": -0.08736216463080355,
-      "MAE medio": 0.7310921472736105,
-      "Desv est R2": 0.1995389465199911
+      "R2 medio": 0.9770209708014457,
+      "MAE medio": 0.04371745308937542,
+      "Desv est R2": 0.03748690847429152
     },
     {
-      "Escenario": "Caracteristicas seleccionadas",
-      "Modelo": "Regresion Lineal",
-      "R2 medio": -0.12514550088279916,
-      "MAE medio": 0.7256053919620271,
-      "Desv est R2": 0.5596776626123229
+      "Escenario": "PCA",
+      "Modelo": "Random Forest",
+      "R2 medio": 0.9404370480999827,
+      "MAE medio": 0.07520584661099915,
+      "Desv est R2": 0.0865364214386848
     }
   ],
   "genres": [
@@ -243,5 +249,7 @@
     "Yeti"
   ],
   "year_min": 2013,
-  "year_max": 2020
+  "year_max": 2020,
+  "sales_min": 0.0,
+  "sales_max": 9.71
 }

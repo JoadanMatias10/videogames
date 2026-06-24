@@ -19,6 +19,29 @@ model_pipeline = joblib.load(MODEL_PATH)
 with open(METADATA_PATH, "r", encoding="utf-8") as file:
     metadata = json.load(file)
 
+REGIONAL_FIELDS = {
+    "North America": "Norteamerica",
+    "Europe": "Europa",
+    "Japan": "Japon",
+    "Rest of World": "Resto del mundo",
+}
+
+
+def parse_sales_value(form, field, label):
+    raw_value = form.get(field, "").strip()
+    if not raw_value:
+        return None, f"Ingresa las ventas de {label}."
+
+    try:
+        value = float(raw_value)
+    except ValueError:
+        return None, f"Las ventas de {label} deben ser numericas."
+
+    if value < 0 or value > 50:
+        return None, f"Las ventas de {label} deben estar entre 0 y 50 millones."
+
+    return value, None
+
 
 def validate_form(form):
     errors = []
@@ -49,10 +72,19 @@ def validate_form(form):
     elif publisher not in metadata["publishers"]:
         errors.append("El publicador seleccionado no es valido.")
 
+    regional_values = {}
+    for field, label in REGIONAL_FIELDS.items():
+        value, error = parse_sales_value(form, field, label)
+        if error:
+            errors.append(error)
+        else:
+            regional_values[field] = value
+
     data = {
         "Year": year,
         "Genre": genre,
         "Publisher": publisher,
+        **regional_values,
     }
     return data, errors
 
@@ -65,6 +97,10 @@ def index():
         "Year": "",
         "Genre": metadata["genres"][0] if metadata["genres"] else "",
         "Publisher": metadata["publishers"][0] if metadata["publishers"] else "",
+        "North America": "",
+        "Europe": "",
+        "Japan": "",
+        "Rest of World": "",
     }
 
     if request.method == "POST":
@@ -72,6 +108,10 @@ def index():
             "Year": request.form.get("Year", "").strip(),
             "Genre": request.form.get("Genre", "").strip(),
             "Publisher": request.form.get("Publisher", "").strip(),
+            "North America": request.form.get("North America", "").strip(),
+            "Europe": request.form.get("Europe", "").strip(),
+            "Japan": request.form.get("Japan", "").strip(),
+            "Rest of World": request.form.get("Rest of World", "").strip(),
         }
         row, errors = validate_form(request.form)
 
@@ -86,6 +126,7 @@ def index():
         errors=errors,
         form_data=form_data,
         metadata=metadata,
+        regional_fields=REGIONAL_FIELDS,
     )
 
 
