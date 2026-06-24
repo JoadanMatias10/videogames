@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prediccion de ventas globales PS4</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <main class="app-shell">
+    <section class="panel">
+      <div class="header">
+        <p class="eyebrow">Modelo de regresion</p>
+        <h1>Prediccion de ventas globales de videojuegos PS4</h1>
+        <p class="summary">
+          Ingresa datos originales del videojuego. La aplicacion aplica internamente imputacion,
+          codificacion, escalado y la representacion seleccionada del modelo.
+        </p>
+      </div>
+
+      {% if errors %}
+      <div class="alert" role="alert">
+        {% for error in errors %}
+          <p>{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post" class="prediction-form">
+        <label>
+          <span>Año de lanzamiento</span>
+          <small>Ejemplo: 2018. Si se deja vacio, el pipeline imputara el valor.</small>
+          <input type="number" name="Year" min="2013" max="2030" step="1" value="{{ form_data.Year }}">
+        </label>
+
+        <label>
+          <span>Genero</span>
+          <small>Categoria original del videojuego.</small>
+          <select name="Genre" required>
+            {% for genre in metadata.genres %}
+              <option value="{{ genre }}" {% if genre == form_data.Genre %}selected{% endif %}>{{ genre }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label>
+          <span>Publicador</span>
+          <small>Empresa publicadora del juego.</small>
+          <select name="Publisher" required>
+            {% for publisher in metadata.publishers %}
+              <option value="{{ publisher }}" {% if publisher == form_data.Publisher %}selected{% endif %}>{{ publisher }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <button type="submit">Realizar prediccion</button>
+      </form>
+
+      {% if prediction is not none %}
+      <section class="result">
+        <p>Prediccion estimada</p>
+        <strong>{{ "%.2f"|format(prediction) }}</strong>
+        <span>millones de copias vendidas a nivel global</span>
+      </section>
+      {% endif %}
+    </section>
+
+    <aside class="details">
+      <h2>Modelo utilizado</h2>
+      <dl>
+        <div>
+          <dt>Escenario</dt>
+          <dd>{{ metadata.best_scenario }}</dd>
+        </div>
+        <div>
+          <dt>Algoritmo</dt>
+          <dd>{{ metadata.best_model }}</dd>
+        </div>
+        <div>
+          <dt>Variable objetivo</dt>
+          <dd>{{ metadata.target }} en {{ metadata.target_unit }}</dd>
+        </div>
+      </dl>
+    </aside>
+  </main>
+</body>
+</html>

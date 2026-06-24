@@ -1,0 +1,12 @@
+.venv/
+.agents/
+.codex/
+.matplotlib_cache/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+Videogames_test.ipynb
+*.zip
+*.log
+.DS_Store
+Thumbs.db
