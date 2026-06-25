@@ -41,6 +41,20 @@ NUMERIC_FIELDS = {
         "max": 50,
         "step": 0.01,
     },
+    "JP_Sales": {
+        "label": "Ventas en Japon",
+        "help": "Millones de copias vendidas en Japon.",
+        "min": 0,
+        "max": 50,
+        "step": 0.01,
+    },
+    "Other_Sales": {
+        "label": "Ventas en otras regiones",
+        "help": "Millones de copias vendidas en otras regiones.",
+        "min": 0,
+        "max": 50,
+        "step": 0.01,
+    },
     "Critic_Score": {
         "label": "Puntaje de critica",
         "help": "Valor de 0 a 100.",

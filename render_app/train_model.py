@@ -18,9 +18,9 @@ MODEL_PATH = BASE_DIR / "model_pipeline.joblib"
 METADATA_PATH = BASE_DIR / "model_metadata.json"
 
 TARGET = "Global_Sales"
-FEATURES = ["Platform", "Genre", "NA_Sales", "EU_Sales", "Critic_Score", "Critic_Count"]
-NUMERIC_FEATURES = ["NA_Sales", "EU_Sales", "Critic_Score", "Critic_Count"]
-CATEGORICAL_FEATURES = ["Platform", "Genre"]
+FEATURES = ["NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Critic_Score", "Critic_Count"]
+NUMERIC_FEATURES = ["NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Critic_Score", "Critic_Count"]
+CATEGORICAL_FEATURES = []
 
 
 def load_dataset():
@@ -63,7 +63,7 @@ def build_pipeline():
         [
             ("preprocessor", preprocessor),
             ("scaler", StandardScaler()),
-            ("model", Ridge(alpha=10.0)),
+            ("model", Ridge(alpha=0.1)),
         ]
     )
 

@@ -5,10 +5,10 @@
   "scenario": "Caracteristicas seleccionadas",
   "model": "Ridge",
   "features": [
-    "Platform",
-    "Genre",
     "NA_Sales",
     "EU_Sales",
+    "JP_Sales",
+    "Other_Sales",
     "Critic_Score",
     "Critic_Count"
   ],
@@ -17,60 +17,11 @@
   "numeric_features": [
     "NA_Sales",
     "EU_Sales",
+    "JP_Sales",
+    "Other_Sales",
     "Critic_Score",
     "Critic_Count"
   ],
-  "categorical_features": [
-    "Platform",
-    "Genre"
-  ],
-  "categories": {
-    "Platform": [
-      "2600",
-      "3DO",
-      "3DS",
-      "DC",
-      "DS",
-      "GB",
-      "GBA",
-      "GC",
-      "GEN",
-      "GG",
-      "N64",
-      "NES",
-      "NG",
-      "PC",
-      "PCFX",
-      "PS",
-      "PS2",
-      "PS3",
-      "PS4",
-      "PSP",
-      "PSV",
-      "SAT",
-      "SCD",
-      "SNES",
-      "TG16",
-      "WS",
-      "Wii",
-      "WiiU",
-      "X360",
-      "XB",
-      "XOne"
-    ],
-    "Genre": [
-      "Action",
-      "Adventure",
-      "Fighting",
-      "Misc",
-      "Platform",
-      "Puzzle",
-      "Racing",
-      "Role-Playing",
-      "Shooter",
-      "Simulation",
-      "Sports",
-      "Strategy"
-    ]
-  }
+  "categorical_features": [],
+  "categories": {}
 }
